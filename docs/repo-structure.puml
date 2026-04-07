@@ -1,0 +1,67 @@
+@startuml
+title Repository Structure - prometheus-grafana-demo
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 12
+skinparam legendBackgroundColor #F5F5F5
+
+legend left
+  |= Icon |= Description |
+  | <&folder> | Directory |
+  | <&file> | File |
+  | <&cog> | Configuration |
+  | <&code> | Source code |
+endlegend
+
+salt
+{
+  {T
+    + <&folder> **prometheus-grafana-demo**
+    ++ <&cog> docker-compose.yaml | All 9 services orchestration
+    ++ <&cog> prometheus.yml | Scrape targets for all services
+    ++ <&file> .gitignore
+    ++ <&file> README.md
+    ++ <&folder> **services/**
+    +++ <&folder> **order-service/** | REST API - order management
+    ++++ <&code> app.py | FastAPI app with RabbitMQ publishing
+    ++++ <&file> Dockerfile
+    ++++ <&file> requirements.txt
+    +++ <&folder> **inventory-service/** | REST API - stock levels
+    ++++ <&code> app.py | FastAPI app with gauge metrics
+    ++++ <&file> Dockerfile
+    ++++ <&file> requirements.txt
+    +++ <&folder> **payment-service/** | REST API - payment simulation
+    ++++ <&code> app.py | FastAPI app with 15% failure rate
+    ++++ <&file> Dockerfile
+    ++++ <&file> requirements.txt
+    +++ <&folder> **fulfillment-worker/** | Background job processor
+    ++++ <&code> worker.py | RabbitMQ consumer, standalone metrics
+    ++++ <&file> Dockerfile
+    ++++ <&file> requirements.txt
+    +++ <&folder> **load-generator/** | Auto traffic generation
+    ++++ <&code> generator.py | Sends random requests to all APIs
+    ++++ <&file> Dockerfile
+    ++++ <&file> requirements.txt
+    ++ <&folder> **web/** | React SPA frontend
+    +++ <&code> Dockerfile | Multi-stage: node build + nginx
+    +++ <&cog> nginx.conf | Reverse proxy to API services
+    +++ <&file> package.json
+    +++ <&folder> **public/**
+    ++++ <&file> index.html
+    +++ <&folder> **src/**
+    ++++ <&code> index.js | App entry point
+    ++++ <&code> App.js | Main layout with tab navigation
+    ++++ <&code> Orders.js | Place orders, view history
+    ++++ <&code> Inventory.js | Stock levels, restocking
+    ++++ <&code> Payments.js | Payment simulator with burst mode
+    ++++ <&code> Health.js | Service health dashboard
+    ++ <&folder> **grafana/**
+    +++ <&folder> **provisioning/**
+    ++++ <&folder> **datasources/**
+    +++++ <&cog> datasource.yml | Prometheus auto-configured
+    ++++ <&folder> **dashboards/**
+    +++++ <&cog> dashboards.yml | Dashboard provisioning config
+    +++++ <&cog> ecommerce.json | Pre-built 8-panel dashboard
+  }
+}
+@enduml
