@@ -1,0 +1,47 @@
+@startuml
+title How Prometheus Metrics Work
+
+skinparam backgroundColor #FEFEFE
+skinparam sequenceArrowThickness 2
+
+actor "User" as user
+participant "React SPA\n:7070" as spa
+participant "Order Service\n:8001" as order
+database "In-Memory\nMetrics" as mem
+participant "Prometheus\n:9090" as prom
+database "Time-Series\nDatabase" as tsdb
+participant "Grafana\n:3000" as grafana
+
+== 1. User Action Generates Metrics ==
+
+user -> spa : Click "Place Order"
+spa -> order : POST /orders
+order -> order : Handle request
+order -> mem : orders_total.inc()\norder_amount.observe(29.99)\norder_processing_seconds.observe(0.05)
+order --> spa : { order_id: "abc123", status: "queued" }
+spa --> user : Show order confirmation
+
+== 2. Prometheus Scrapes Metrics (every 15s) ==
+
+prom -> order : GET /metrics
+mem --> prom : # TYPE orders_total counter\norders_total{status="queued"} 42\norders_total{status="failed"} 3\n# TYPE order_amount_dollars histogram\norder_amount_dollars_bucket{le="50"} 28\n...
+prom -> tsdb : Store values with timestamp
+
+note over prom
+  Prometheus **pulls** metrics
+  from each service.
+  Services do NOT push.
+end note
+
+== 3. Grafana Queries Prometheus ==
+
+grafana -> prom : PromQL: rate(orders_total[1m])
+prom -> tsdb : Query time-series data
+tsdb --> prom : [{t: 12:00, v: 0.5}, {t: 12:01, v: 0.8}, ...]
+prom --> grafana : JSON response with data points
+grafana -> grafana : Render graph
+
+user -> grafana : View dashboard
+grafana --> user : Display charts and panels
+
+@enduml
