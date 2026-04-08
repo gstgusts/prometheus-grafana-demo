@@ -1,0 +1,67 @@
+@startuml
+title Repizitorija struktūra - prometheus-grafana-demo
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 12
+skinparam legendBackgroundColor #F5F5F5
+
+legend left
+  |= Ikona |= Apraksts |
+  | <&folder> | Mape |
+  | <&file> | Fails |
+  | <&cog> | Konfigurācija |
+  | <&code> | Avota kods |
+endlegend
+
+salt
+{
+  {T
+    + <&folder> **prometheus-grafana-demo**
+    ++ <&cog> docker-compose.yaml | Visu 9 servisu orkestrācija
+    ++ <&cog> prometheus.yml | Metriku iegūšanas konfigurācija visiem servisiem
+    ++ <&file> .gitignore
+    ++ <&file> README.md
+    ++ <&folder> **services/**
+    +++ <&folder> **order-service/** | REST API - pasūtījumu pārvaldība
+    ++++ <&code> app.py | FastAPI aplikācija ar RabbitMQ ziņojumu nosūtīšanu
+    ++++ <&file> Dockerfile
+    ++++ <&file> requirements.txt
+    +++ <&folder> **inventory-service/** | REST API - krājumu pārvaldība
+    ++++ <&code> app.py | FastAPI aplikācija ar gauge tipa metrikām
+    ++++ <&file> Dockerfile
+    ++++ <&file> requirements.txt
+    +++ <&folder> **payment-service/** | REST API - maksājumu simulācija
+    ++++ <&code> app.py | FastAPI aplikācija ar 15% kļūdu varbūtību
+    ++++ <&file> Dockerfile
+    ++++ <&file> requirements.txt
+    +++ <&folder> **fulfillment-worker/** | Fona uzdevumu apstrāde
+    ++++ <&code> worker.py | RabbitMQ patērētājs ar metrikām
+    ++++ <&file> Dockerfile
+    ++++ <&file> requirements.txt
+    +++ <&folder> **load-generator/** | Automātiska slodzes ģenerēšana
+    ++++ <&code> generator.py | Nosūta nejaušus pieprasījumus uz API servisiem
+    ++++ <&file> Dockerfile
+    ++++ <&file> requirements.txt
+    ++ <&folder> **web/** | React SPA lietotāja saskarne
+    +++ <&code> Dockerfile | Daudzposmu build: node + nginx
+    +++ <&cog> nginx.conf | Reverse proxy uz API servisiem
+    +++ <&file> package.json
+    +++ <&folder> **public/**
+    ++++ <&file> index.html
+    +++ <&folder> **src/**
+    ++++ <&code> index.js | Aplikācijas sākuma punkts
+    ++++ <&code> App.js | Galvenais izkārtojums ar cilnēm
+    ++++ <&code> Orders.js | Pasūtījumu izveide un vēsture
+    ++++ <&code> Inventory.js | Krājumu pārvaldība
+    ++++ <&code> Payments.js | Maksājumu simulators
+    ++++ <&code> Health.js | Servisu veselības pārskats
+    ++ <&folder> **grafana/**
+    +++ <&folder> **provisioning/**
+    ++++ <&folder> **datasources/**
+    +++++ <&cog> datasource.yml | Automātiska Prometheus konfigurācija
+    ++++ <&folder> **dashboards/**
+    +++++ <&cog> dashboards.yml | Dashboard konfigurācija
+    +++++ <&cog> ecommerce.json | Sagatavots dashboard ar 8 paneļiem
+  }
+}
+@enduml
