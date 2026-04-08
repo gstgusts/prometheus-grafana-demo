@@ -33,12 +33,17 @@ worker_idle = Gauge(
 )
 
 
-def update_queue_depth(channel):
-    """Periodically check queue depth."""
+def update_queue_depth():
+    """Periodically check queue depth using its own connection."""
     while True:
         try:
-            q = channel.queue_declare(queue="orders", durable=True, passive=True)
+            conn = pika.BlockingConnection(
+                pika.ConnectionParameters(host=RABBITMQ_HOST)
+            )
+            ch = conn.channel()
+            q = ch.queue_declare(queue="orders", durable=True, passive=True)
             queue_depth.set(q.method.message_count)
+            conn.close()
         except Exception:
             pass
         time.sleep(5)
@@ -116,7 +121,7 @@ def main():
                 pika.ConnectionParameters(host=RABBITMQ_HOST)
             )
             break
-        except pika.exceptions.AMQPConnectionError:
+        except Exception:
             print("Waiting for RabbitMQ...")
             time.sleep(5)
 
@@ -124,9 +129,9 @@ def main():
     channel.queue_declare(queue="orders", durable=True)
     channel.basic_qos(prefetch_count=1)
 
-    # Start queue depth monitor in background
+    # Start queue depth monitor in background (uses its own connection)
     monitor = threading.Thread(
-        target=update_queue_depth, args=(connection.channel(),), daemon=True
+        target=update_queue_depth, daemon=True
     )
     monitor.start()
 
